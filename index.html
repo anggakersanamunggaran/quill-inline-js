@@ -1,138 +1,145 @@
 <!-- Include stylesheet -->
-<link href="assets/css/quill.snow.css" rel="stylesheet">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <body>
 
-<!-- Create the editor container -->
-<div id="editor">
-  <p>Hello World!</p>
-  <p>Some initial <strong>bold</strong> text</p>
-  <p><br></p>
-</div>
+      <link href="assets/css/quill.snow.css" rel="stylesheet">
 
-<!-- Include the Quill library -->
-<script src="assets/js/quill.js"></script>
+      <!-- Create the editor container -->
+      <div id="editor">
+        <p>Hello World!</p>
+        <p>Some initial <strong>bold</strong> text</p>
+        <p><br></p>
+      </div>
+      
+      <!-- Include the Quill library -->
+      <script src="assets/js/quill.js"></script>
+      
+      <!-- Initialize Quill editor -->
+      <script>
+        
+        var ColorClass = Quill.import('attributors/style/color');
+        var SizeStyle = Quill.import('attributors/style/size');
+        var BackgroundStyle = Quill.import('attributors/style/background');
+        var AlignStyle = Quill.import('attributors/style/align')
+        var FontStyle = Quill.import('attributors/style/font')
+        Quill.register(ColorClass, true);
+        Quill.register(SizeStyle, true);
+      
+        FontStyle.whitelist = [ 'arial', 'courier', 'garamond', 'tahoma', 'times-new-roman', 'verdana','mirza', 'roboto', 'sans-serif'];
+        SizeStyle.whitelist = ["12px", "13px", "14px", "18px", "20px", "22px"];
+      
+        //link modified
+        //https://stackoverflow.com/questions/41696056/quill-link-handler-not-working
+        var Link = Quill.import('formats/link');
+        var builtInFunc = Link.sanitize;
+        Link.sanitize = function customSanitizeLinkInput(linkValueInput) {
+            var val = linkValueInput;
+      
+            // do nothing, since this implies user's already using a custom protocol
+            if (/^\w+:/.test(val));
+            else if (!/^http?:/.test(val))
+                val = "https://" + val;
+      
+            return builtInFunc.call(this, val); // retain the built-in logic
+        };
+      
+        Quill.register(ColorClass, true);
+        Quill.register(SizeStyle, true);
+        Quill.register(BackgroundStyle, true);
+        Quill.register(AlignStyle, true);
+        Quill.register(FontStyle, true);
+      
+      
+        //add Style element
+        var fonts = ['Arial', 'Courier', 'Garamond', 'Tahoma', 'Times New Roman', 'Verdana' ,'Mirza', 'Roboto', 'Sans Serif'];
+        // var fonts = FontStyle.whitelist
+        // generate code friendly names
+        function getFontName(font) {
+            return font.toLowerCase().replace(/\s/g, "-");
+        }
+        var fontNames = fonts.map(font => getFontName(font));
+        // add fonts to style
+        var fontStyles = ".ql-snow .ql-picker.ql-font {width: 151px;}";
+        fonts.forEach(function(font) {
+            var fontName = getFontName(font);
+            fontStyles += ".ql-snow .ql-picker.ql-font .ql-picker-label[data-value=" + fontName + "]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=" + fontName + "]::before {" +
+                "content: '" + font + "';" +
+                "font-family: '" + font + "', sans-serif;" +
+                "}" +
+                ".ql-font-" + fontName + "{" +
+                " font-family: '" + font + "', sans-serif;" +
+                "}";
+      
+        });
+        var node = document.createElement('style');
+        node.innerHTML = fontStyles;
+        document.body.appendChild(node);
+      
+      
+        var sizeStyles="";
+        SizeStyle.whitelist.forEach(function(size){
+            sizeStyles += " .ql-snow .ql-picker.ql-size .ql-picker-label[data-value='"+size+"']::before, .ql-snow .ql-picker.ql-size .ql-picker-item[data-value='"+size+"']::before {" +
+                "content: '" + size + "';" +
+                "font-size: " + size + ";}";
+        })
+        var nodeSize = document.createElement('style');
+        nodeSize.innerHTML = sizeStyles;
+        document.body.appendChild(nodeSize);
+      
+      
+      
+      
+        var quill = new Quill('#editor', {
+          theme: 'snow',
+          modules:{
+            toolbar:{
+              container: [
+                       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                  [{ 'font':FontStyle.whitelist}],
+      
+                                  [{ 'size': SizeStyle.whitelist }],
+                                  ['bold', 'italic', 'underline', 'strike'],
+                                  ['blockquote', 'code-block'],
+                                  [{ 'script': 'sub'}, { 'script': 'super' }],
+                                  [{ 'direction': 'rtl' }],
+                                  [{'list': 'ordered'}, {'list': 'bullet'}],
+                                  [{ 'align': [] }],
+                                  [{ 'color': [] }, { 'background': [] }],
+                                  [ 'link',  ],
+                                  ['clean']
+                      ],
+                      }
+          },
+          formats:
+            [
+                  'header',
+                  'font',
+                  'size',
+                  'bold', 'italic', 'underline','strike',
+                  'list', 'bullet',
+                  'align',
+                  'color', 'background',
+                  'blockquote','code-block',
+                  'script',
+                  'direction',
+                  'link',
+      
+            ],
+        });
+      
+        quill.on('text-change', function(delta, oldDelta, source) {
+          if (source == 'api') {
+            console.log("An API call triggered this change.");
+          } else if (source == 'user') {
+            console.log("A user action triggered this change.");
+            console.log(quill.container.firstChild.innerHTML)
+          }
+        });
+      
+      
+      
+      </script>
 
-<!-- Initialize Quill editor -->
-<script>
-  
-  var ColorClass = Quill.import('attributors/style/color');
-  var SizeStyle = Quill.import('attributors/style/size');
-  var BackgroundStyle = Quill.import('attributors/style/background');
-  var AlignStyle = Quill.import('attributors/style/align')
-  var FontStyle = Quill.import('attributors/style/font')
-  Quill.register(ColorClass, true);
-  Quill.register(SizeStyle, true);
-
-  FontStyle.whitelist = [ 'arial', 'courier', 'garamond', 'tahoma', 'times-new-roman', 'verdana','mirza', 'roboto', 'sans-serif'];
-  SizeStyle.whitelist = ["12px", "13px", "14px", "18px", "20px", "22px"];
-
-  //link modified
-  //https://stackoverflow.com/questions/41696056/quill-link-handler-not-working
-  var Link = Quill.import('formats/link');
-  var builtInFunc = Link.sanitize;
-  Link.sanitize = function customSanitizeLinkInput(linkValueInput) {
-      var val = linkValueInput;
-
-      // do nothing, since this implies user's already using a custom protocol
-      if (/^\w+:/.test(val));
-      else if (!/^http?:/.test(val))
-          val = "https://" + val;
-
-      return builtInFunc.call(this, val); // retain the built-in logic
-  };
-
-  Quill.register(ColorClass, true);
-  Quill.register(SizeStyle, true);
-  Quill.register(BackgroundStyle, true);
-  Quill.register(AlignStyle, true);
-  Quill.register(FontStyle, true);
-
-
-  //add Style element
-  var fonts = ['Arial', 'Courier', 'Garamond', 'Tahoma', 'Times New Roman', 'Verdana' ,'Mirza', 'Roboto', 'Sans Serif'];
-  // var fonts = FontStyle.whitelist
-  // generate code friendly names
-  function getFontName(font) {
-      return font.toLowerCase().replace(/\s/g, "-");
-  }
-  var fontNames = fonts.map(font => getFontName(font));
-  // add fonts to style
-  var fontStyles = ".ql-snow .ql-picker.ql-font {width: 151px;}";
-  fonts.forEach(function(font) {
-      var fontName = getFontName(font);
-      fontStyles += ".ql-snow .ql-picker.ql-font .ql-picker-label[data-value=" + fontName + "]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=" + fontName + "]::before {" +
-          "content: '" + font + "';" +
-          "font-family: '" + font + "', sans-serif;" +
-          "}" +
-          ".ql-font-" + fontName + "{" +
-          " font-family: '" + font + "', sans-serif;" +
-          "}";
-
-  });
-  var node = document.createElement('style');
-  node.innerHTML = fontStyles;
-  document.body.appendChild(node);
-
-
-  var sizeStyles="";
-  SizeStyle.whitelist.forEach(function(size){
-      sizeStyles += " .ql-snow .ql-picker.ql-size .ql-picker-label[data-value='"+size+"']::before, .ql-snow .ql-picker.ql-size .ql-picker-item[data-value='"+size+"']::before {" +
-          "content: '" + size + "';" +
-          "font-size: " + size + ";}";
-  })
-  var nodeSize = document.createElement('style');
-  nodeSize.innerHTML = sizeStyles;
-  document.body.appendChild(nodeSize);
-
-
-
-
-  var quill = new Quill('#editor', {
-    theme: 'snow',
-    modules:{
-      toolbar:{
-        container: [
-                 [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                            [{ 'font':FontStyle.whitelist}],
-
-                            [{ 'size': SizeStyle.whitelist }],
-                            ['bold', 'italic', 'underline', 'strike'],
-                            ['blockquote', 'code-block'],
-                            [{ 'script': 'sub'}, { 'script': 'super' }],
-                            [{ 'direction': 'rtl' }],
-                            [{'list': 'ordered'}, {'list': 'bullet'}],
-                            [{ 'align': [] }],
-                            [{ 'color': [] }, { 'background': [] }],
-                            [ 'link',  ],
-                            ['clean']
-                ],
-                }
-    },
-    formats:
-      [
-            'header',
-            'font',
-            'size',
-            'bold', 'italic', 'underline','strike',
-            'list', 'bullet',
-            'align',
-            'color', 'background',
-            'blockquote','code-block',
-            'script',
-            'direction',
-            'link',
-
-  	  ],
-  });
-
-  quill.on('text-change', function(delta, oldDelta, source) {
-    if (source == 'api') {
-      console.log("An API call triggered this change.");
-    } else if (source == 'user') {
-      console.log("A user action triggered this change.");
-      console.log(quill.container.firstChild.innerHTML)
-    }
-  });
-
-
-
-</script>
+  </body>
+</head>
